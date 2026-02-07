@@ -33,16 +33,18 @@ add_executable(MyApp main.cpp)
 target_link_libraries(MyApp PRIVATE BlockVector)
 ```
 
-### Method 2: Copy Header (Single File)
+### Method 2: Copy Header (Recommended for simple projects)
 
-Since it is header-only, you can simply download `include/BlockVector.hpp` and copy it into your project's include directory.
+You can download the latest stable version directly from GitHub Releases.
 
 **Command Line:**
 ```bash
-# Download latest version
-curl -O https://raw.githubusercontent.com/L-Rocket/BlockVector/main/include/BlockVector.hpp
-# OR
-wget https://raw.githubusercontent.com/L-Rocket/BlockVector/main/include/BlockVector.hpp
+# Download latest stable release
+# Note: -L is required for curl to follow redirects
+curl -L -O https://github.com/L-Rocket/BlockVector/releases/latest/download/BlockVector.hpp
+
+# OR using wget
+wget https://github.com/L-Rocket/BlockVector/releases/latest/download/BlockVector.hpp
 ```
 
 ## Usage
