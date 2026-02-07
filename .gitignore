@@ -1,3 +1,4 @@
-/build/*
-main.dSYM/*
-/.cache/*
+build/
+build_test/
+.cache/
+*.dSYM/

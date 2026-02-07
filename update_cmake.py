@@ -1,15 +1,26 @@
 import os
 
 # --- 项目配置 ---
-SRC_FILES = ["src/example.cpp"]   # 公共源文件，会附加到每个测试可执行文件
-MAIN_TARGET = "src/main.cpp"      # 主程序
 PROJECT_NAME = "main"
 CXX_STANDARD = 17
+SRC_DIR = "src"
 TEST_DIR = "tests"
 
-# --- 扫描 tests 目录 ---
-tests = [f for f in os.listdir(TEST_DIR) if f.endswith(".cpp")]
-tests.sort()  # 保证顺序一致
+# --- 扫描 src/tests 目录 ---
+def list_cpp_files(dir_path):
+    if not os.path.isdir(dir_path):
+        return []
+    files = [f for f in os.listdir(dir_path) if f.endswith(".cpp")]
+    files.sort()
+    return files
+
+src_files = list_cpp_files(SRC_DIR)
+tests = list_cpp_files(TEST_DIR)
+
+# --- 识别主程序和公共源文件 ---
+main_candidates = [f for f in src_files if f == "main.cpp"]
+MAIN_TARGET = os.path.join(SRC_DIR, main_candidates[0]) if main_candidates else ""
+common_srcs = [os.path.join(SRC_DIR, f) for f in src_files if f != "main.cpp"]
 
 # --- 拼接 CMakeLists 内容 ---
 lines = [
@@ -26,15 +37,16 @@ lines = [
 for test in tests:
     name = os.path.splitext(test)[0]
     test_path = os.path.join(TEST_DIR, test)
-    srcs = " ".join([test_path] + SRC_FILES)
+    srcs = " ".join([test_path] + common_srcs)
     lines.append(f"add_executable({name} {srcs})")
     lines.append(f"add_test(NAME {name} COMMAND {name})")
     lines.append("")
 
 # --- 添加主程序 ---
-main_srcs = " ".join([MAIN_TARGET] + SRC_FILES)
-lines.append(f"add_executable({PROJECT_NAME} {main_srcs})")
-lines.append("")
+if MAIN_TARGET:
+    main_srcs = " ".join([MAIN_TARGET] + common_srcs)
+    lines.append(f"add_executable({PROJECT_NAME} {main_srcs})")
+    lines.append("")
 
 # --- 写入文件 ---
 cmake_content = "\n".join(lines)
