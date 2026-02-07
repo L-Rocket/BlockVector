@@ -20,7 +20,21 @@ While `std::vector` is the default choice for dynamic arrays, it has significant
 **BlockVector solves these problems with "Chunked Storage":**
 -   **Pointer Stability**: Guaranteed pointer/reference validity for the entire lifetime of the container. Pointers to elements *never* break when you `push_back`.
 -   **Zero-Copy Growth**: Expansion only involves allocating a new fixed-size block. No old elements are ever moved or copied.
--   **Predictable Memory**: Incremental allocation leads to a smoother memory usage curve.
+- **Predictable Memory**: Incremental allocation leads to a smoother memory usage curve.
+
+### 🧠 Architecture: The Best of Both Worlds
+
+You can think of `BlockVector` as **`std::vector` with a built-in memory pool**.
+
+| | **std::vector** | **Object Pool** | **BlockVector** |
+| :--- | :---: | :---: | :---: |
+| **Interface** | Friendly (STL) | Manual Alloc/Free | **Friendly (STL)** |
+| **Growth Strategy** | Reallocate & Move | Chunks / Blocks | **Chunks / Blocks** |
+| **Pointer Stability** | ❌ No | ✅ Yes | **✅ Yes** |
+| **Random Access** | ✅ O(1) | ❌ Typically No | **✅ O(1)** |
+| **Cache Locality** | ⭐⭐⭐ Best | ⭐⭐ Good | **⭐⭐ Good** |
+
+It encapsulates the complex memory management of a pool (chunking, expansion, addressing) behind a familiar, easy-to-use vector interface.
 
 ---
 
