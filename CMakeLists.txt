@@ -36,7 +36,10 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(GoogleTest)
 
     # --- Main Test Suite ---
-    add_executable(unit_tests tests/test_vector_gtest.cpp)
+    add_executable(unit_tests 
+        tests/test_vector_gtest.cpp
+        tests/test_init_list.cpp
+    )
     target_link_libraries(unit_tests GTest::gtest_main)
     gtest_discover_tests(unit_tests XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_results)
 

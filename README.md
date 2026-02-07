@@ -11,6 +11,7 @@ BlockVector is a high-performance, header-only C++17 library that provides `Bloc
 - **Pointer Stability**: Pointers/References to elements remain valid after `push_back`.
 - **Random Access**: Fast `operator[]` access (O(1)).
 - **Complete Iterators**: Fully compliant `RandomAccessIterator` (compatible with `std::sort`, `std::lower_bound`).
+- **Modern C++**: Support for **Initializer Lists** (`{1, 2, 3}`) and **`emplace_back`**.
 - **Standard API**: Drop-in replacement for `std::vector` in most cases (`push_back`, `pop_back`, `resize`, `reserve`).
 
 ## Integration
@@ -33,17 +34,18 @@ add_executable(MyApp main.cpp)
 target_link_libraries(MyApp PRIVATE BlockVector)
 ```
 
-### Method 2: Copy Header (Recommended for simple projects)
+### Method 2: Copy Header (Simple)
 
 You can download the latest stable version directly from GitHub Releases.
 
-**Command Line:**
+**Using curl:**
 ```bash
-# Download latest stable release
-# Note: -L is required for curl to follow redirects
+# Note: -L is required to follow redirects
 curl -L -O https://github.com/L-Rocket/BlockVector/releases/latest/download/BlockVector.hpp
+```
 
-# OR using wget
+**Using wget:**
+```bash
 wget https://github.com/L-Rocket/BlockVector/releases/latest/download/BlockVector.hpp
 ```
 
@@ -54,21 +56,23 @@ wget https://github.com/L-Rocket/BlockVector/releases/latest/download/BlockVecto
 #include <algorithm>
 #include "BlockVector.hpp"
 
+struct Point { int x, y; Point(int a, int b): x(a), y(b){} };
+
 int main() {
-    BlockVector<int> bv;
+    // 1. Initializer List
+    BlockVector<int> bv = {10, 5, 20, 15};
     
-    // Add elements
-    bv.push_back(10);
-    bv.push_back(5);
-    bv.push_back(20);
+    // 2. Emplace Back (No copy)
+    BlockVector<Point> points;
+    points.emplace_back(1, 2);
 
-    // Random Access
-    std::cout << "Element at 1: " << bv[1] << std::endl;
+    // 3. Random Access
+    std::cout << "Element at 1: " << bv[1] << std::endl; // 5
 
-    // Use with Standard Algorithms
-    std::sort(bv.begin(), bv.end());
+    // 4. Use with Standard Algorithms
+    std::sort(bv.begin(), bv.end()); // 5, 10, 15, 20
 
-    // Iterate
+    // 5. Iterate
     for (const auto& val : bv) {
         std::cout << val << " ";
     }

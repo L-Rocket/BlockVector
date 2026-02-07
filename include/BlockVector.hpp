@@ -4,6 +4,7 @@
 #include <iterator>
 #include <type_traits>
 #include <stdexcept>
+#include <initializer_list>
 
 // Forward declarations
 template <typename T>
@@ -36,6 +37,7 @@ public:
     BlockVector();
     BlockVector(size_t n);
     BlockVector(size_t n, const T& value);
+    BlockVector(std::initializer_list<T> init);
     ~BlockVector();
 
     // Element access
@@ -59,7 +61,8 @@ public:
 
     // manipulation
     void push_back(const T& value);
-    // emplace_back(Args&&...)
+    template <typename... Args>
+    T& emplace_back(Args&&... args);
     void pop_back();
     void clear();
     void resize(size_t n);
@@ -289,6 +292,25 @@ BlockVector<T>::BlockVector(size_t n, const T& value)
 }
 
 template <typename T>
+BlockVector<T>::BlockVector(std::initializer_list<T> init)
+    : size_(0), capacity_(0), block_size_(kDefaultBlockSize), block_shift_(kDefaultBlockShift), block_mask_(kDefaultBlockSize - 1) {
+    size_t n = init.size();
+    if (n == 0) {
+        return;
+    }
+
+    while (block_size_ < n) {
+        block_size_ <<= 1;
+    }
+    update_block_shift();
+    capacity_ = block_size_;
+    chunks_.emplace_back();
+    chunks_.back().reserve(block_size_);
+    chunks_.back().insert(chunks_.back().end(), init.begin(), init.end());
+    size_ = n;
+}
+
+template <typename T>
 BlockVector<T>::~BlockVector() = default;
 
 template <typename T>
@@ -425,6 +447,19 @@ void BlockVector<T>::push_back(const T& value) {
     }
     chunks_.back().push_back(value);
     ++size_;
+}
+
+template <typename T>
+template <typename... Args>
+T& BlockVector<T>::emplace_back(Args&&... args) {
+    if (size_ == capacity_) {
+        chunks_.emplace_back();
+        chunks_.back().reserve(block_size_);
+        capacity_ += block_size_;
+    }
+    chunks_.back().emplace_back(std::forward<Args>(args)...);
+    ++size_;
+    return chunks_.back().back();
 }
 
 template <typename T>

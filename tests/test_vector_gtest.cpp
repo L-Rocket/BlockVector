@@ -80,3 +80,20 @@ TEST(BlockVectorTest, CapacityGrowth) {
     EXPECT_EQ(bv.size(), n);
     EXPECT_GE(bv.capacity(), n);
 }
+
+struct ComplexObj {
+    int x;
+    double y;
+    ComplexObj(int a, double b) : x(a), y(b) {}
+};
+
+TEST(BlockVectorTest, EmplaceBack) {
+    BlockVector<ComplexObj> bv;
+    bv.emplace_back(1, 2.5);
+    bv.emplace_back(2, 3.5);
+    
+    EXPECT_EQ(bv.size(), 2);
+    EXPECT_EQ(bv[0].x, 1);
+    EXPECT_EQ(bv[0].y, 2.5);
+    EXPECT_EQ(bv[1].x, 2);
+}
