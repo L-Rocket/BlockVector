@@ -25,6 +25,14 @@ private:
 
     void update_block_shift();
 public:
+    using value_type      = T;
+    using size_type       = size_t;
+    using difference_type = std::ptrdiff_t;
+    using reference       = T&;
+    using const_reference = const T&;
+    using pointer         = T*;
+    using const_pointer   = const T*;
+
     using iterator = BlockVectorIterator<T, false>;
     using const_iterator = BlockVectorIterator<T, true>;
     using reverse_iterator = std::reverse_iterator<iterator>;
