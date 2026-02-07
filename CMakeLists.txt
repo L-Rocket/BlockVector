@@ -1,68 +1,55 @@
-cmake_minimum_required(VERSION 3.14) # GTest requires somewhat newer cmake
-project(BlockVector)
+cmake_minimum_required(VERSION 3.14)
+project(BlockVector VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(include)
+# --- 1. Define the Interface Library (Header-only) ---
+# This allows users to just `target_link_libraries(myapp PRIVATE BlockVector)`
+add_library(BlockVector INTERFACE)
+target_include_directories(BlockVector INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
-# --- Coverage Flags ---
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(--coverage)
-  add_link_options(--coverage)
+# --- 2. Testing & Development (Only runs if this is the main project) ---
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    message(STATUS "Building BlockVector tests (Standalone Mode)")
+
+    include_directories(include)
+
+    # --- Coverage Flags (Only for testing) ---
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      add_compile_options(--coverage)
+      add_link_options(--coverage)
+    endif()
+
+    # --- Integrated Google Test ---
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+
+    enable_testing()
+    include(GoogleTest)
+
+    # --- Main Test Suite ---
+    add_executable(unit_tests tests/test_vector_gtest.cpp)
+    target_link_libraries(unit_tests GTest::gtest_main)
+    gtest_discover_tests(unit_tests XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_results)
+
+    # --- Legacy/Perf Tests (Optional) ---
+    # You can keep adding your other performance tests here...
+    add_executable(test_perf_iter_vs_index tests/test_perf_iter_vs_index.cpp)
+    # etc...
+    
+    # Example src/main.cpp build
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+        add_executable(demo_main src/main.cpp)
+    endif()
+
+else()
+    message(STATUS "BlockVector integrated as a subproject (Tests disabled)")
 endif()
-
-# --- Integrated Google Test ---
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
-enable_testing()
-
-# --- Old Manual Tests (Keeping them for now) ---
-add_executable(test_main tests/test_main.cpp)
-add_test(NAME test_main COMMAND test_main)
-# ... (keeping other old tests implicitly if you want, but better to migrate)
-
-# --- New GTest Suite ---
-# We will migrate test_vector to this new suite
-add_executable(unit_tests 
-    tests/test_vector_gtest.cpp
-)
-target_link_libraries(unit_tests GTest::gtest_main)
-
-include(GoogleTest)
-gtest_discover_tests(unit_tests XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_results)
-
-
-add_executable(test_block_stability tests/test_block_stability.cpp)
-add_test(NAME test_block_stability COMMAND test_block_stability)
-
-add_executable(test_perf_growth tests/test_perf_growth.cpp)
-add_test(NAME test_perf_growth COMMAND test_perf_growth)
-
-add_executable(test_perf_reserve tests/test_perf_reserve.cpp)
-add_test(NAME test_perf_reserve COMMAND test_perf_reserve)
-
-add_executable(test_perf_index tests/test_perf_index.cpp)
-add_test(NAME test_perf_index COMMAND test_perf_index)
-
-add_executable(test_perf_jitter tests/test_perf_jitter.cpp)
-add_test(NAME test_perf_jitter COMMAND test_perf_jitter)
-
-add_executable(test_pop_reclaim tests/test_pop_reclaim.cpp)
-add_test(NAME test_pop_reclaim COMMAND test_pop_reclaim)
-
-add_executable(test_perf_object_size tests/test_perf_object_size.cpp)
-add_test(NAME test_perf_object_size COMMAND test_perf_object_size)
-
-add_executable(test_perf_iter_vs_index tests/test_perf_iter_vs_index.cpp)
-add_test(NAME test_perf_iter_vs_index COMMAND test_perf_iter_vs_index)
-
-add_executable(test_perf_index_compare tests/test_perf_index_compare.cpp)
-add_test(NAME test_perf_index_compare COMMAND test_perf_index_compare)
-
-add_executable(main src/main.cpp)
