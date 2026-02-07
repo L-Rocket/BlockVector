@@ -3,7 +3,6 @@
 
 #include <chrono>
 #include <iostream>
-#include <vector>
 
 namespace {
 constexpr size_t kRounds = 20;
