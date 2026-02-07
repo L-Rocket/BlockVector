@@ -4,6 +4,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(include)
 
+# --- Coverage Flags ---
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(--coverage)
+  add_link_options(--coverage)
+endif()
+
 # --- Integrated Google Test ---
 include(FetchContent)
 FetchContent_Declare(
