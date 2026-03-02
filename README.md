@@ -118,6 +118,34 @@ int main() {
 - **Large 3D Models / Point Clouds**: Storing massive objects where moving them is too expensive.
 - **Event/Log Buffers**: High-frequency appending where latency spikes from reallocation are unacceptable.
 
+## Performance Comparison (Local Benchmark)
+
+The following numbers are from a local run in this repository (GCC 13, `-O3`).
+
+### 1) End-to-end operations (`tests/test_main.cpp`)
+
+| Operation | BlockVector | std::vector |
+| :-- | --: | --: |
+| `push_back` (1,000,000 ints) | 12.3845 ms | 21.2956 ms |
+| `resize` (down then up) | 6.30935 ms | 0.123427 ms |
+| `pop_back` (500,000 ops) | 1.12616 ms | 0.000034 ms |
+| Stride read | 0.250066 ms | 0.249232 ms |
+
+### 2) Heavy object append (`tests/test_perf_reserve.cpp`)
+
+| Scenario | Time |
+| :-- | --: |
+| `BlockVector push_back` (no reserve) | 32.0416 ms |
+| `std::vector push_back` (no reserve) | 47.5435 ms |
+| `std::vector push_back` (with `reserve`) | 1.09867 ms |
+
+### 3) Pointer stability (`tests/test_block_stability.cpp`)
+
+- `BlockVector`: address changes for `element[0]` = **0**
+- `std::vector`: address changes for `element[0]` = **11**
+
+> Note: microbenchmark results are sensitive to CPU, compiler, and optimization flags. Re-run these programs in your target environment before making final decisions.
+
 ## License
 
 MIT License
